@@ -58,6 +58,11 @@ class Index(webapp2.RequestHandler):
         vpwd = str(self.request.get("vpwd"))
         email = str(self.request.get("email"))
 
+        inputs = dict(uname = username,
+                     pwd = pwd,
+                     vpwd = vpwd,
+                      email = email)
+
         uname_re = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
         def valid_uname(uname):
             return uname_re.match(uname)
@@ -71,25 +76,25 @@ class Index(webapp2.RequestHandler):
             return email_re.match(email)
 
         check_uname = valid_uname(uname)
-        if check_uname == False:
-            error += "<br>Invalid username<br>"
+        if not valid_uname(uname):
+            inputs["error_uname"] = "Invalid username"
             # self.write_form("<br>Invalid username<br>")
 
         check_pwd = valid_pwd(pwd)
-        if check_pwd == False:
-            error += "<br>Invalid password<br>"
+        if not valid_pwd(pwd):
+            inputs["error_pwd"]= "Invalid password<br>"
             # self.write_form("<br>Invalid password<br>")
-        if pwd != vpwd == False:
-            error += "<br>Passwords do not match<br>"
+        elif pwd != vpwd:
+            intputs["error_pwd_mismatch"]="Passwords do not match"
             # self.write_form("<br>Passwords do not match<br>")
 
         check_email = valid_email(email)
-        if check_email == False:
-            error += "<br>Invalid email address<br>"
+        if valid_email(email):
+            inputs["error_email"] = "Invalid email address"
             # self.write_form("<br>Invalid email address<br>")
 
     # self.write_form()
-        self.response.write(info_form + error)
+        # self.response.write(info_form + error)
 
 app = webapp2.WSGIApplication([
     ('/', Index)
