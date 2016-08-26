@@ -13,27 +13,27 @@ info_form = """
     <label>
         Username:
         <input type = "text" name = "uname"/>
-        %(error_uname)s
+        <div>%(error_uname)s</div>
     </label>
     <p>
     <label>
         Password:
         <input type = "password" name = "pwd"/>
-        %(error_pwd)s
+        <div>%(error_pwd)s</div>
     </label>
     </p>
     <p>
     <label>
         Verify Password:
         <input type = "password" name = "vpwd"/>
-        %(error_pwd_mismatch)s
+        <div>%(error_pwd_mismatch)s</div>
     </label>
     </p>
     <p>
     <label>
         Email:
         <input type = "text" name = "email"/>
-        %(error_email)s
+        <div>%(error_email)s</div>
     </label>
     </p>
     <input type = "submit"/>
@@ -74,13 +74,13 @@ class Index(webapp2.RequestHandler):
             info_form % errors["error_uname"]
 
         check_pwd = valid_pwd(pwd)
-        elif not valid_pwd(pwd):
+        if not valid_pwd(pwd):
             info_form % errors["error_pwd"]
-        elif pwd != vpwd:
+        if pwd != vpwd:
             info_form % errors["error_pwd_mismatch"]
 
         check_email = valid_email(email)
-        elif not valid_email(email):
+        if not valid_email(email):
             info_form % errors["error_email"]
 
         self.response.write(info_form)
@@ -90,13 +90,16 @@ class Index(webapp2.RequestHandler):
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Welcome %(uname)s/title>
+                <title>Welcome %s/title>
             </head>
             <body>
-            <h1>Welcome %(uname)s</h1>
+            <h1>Welcome %s</h1>
             </body>
             </html>
             """
+            welcome % uname
+
+            self.response.write(welcome)
 
 
 app = webapp2.WSGIApplication([
