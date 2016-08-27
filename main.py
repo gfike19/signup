@@ -13,27 +13,27 @@ info_form = """
     <label>
         Username:
         <input type = "text" name = "uname"/>
-        <div>%(error_uname)s</div>
+        <div>"%(error_uname)s"</div>
     </label>
     <p>
     <label>
         Password:
         <input type = "password" name = "pwd"/>
-        <div>%(error_pwd)s</div>
+        <div>"%(error_pwd)s"</div>
     </label>
     </p>
     <p>
     <label>
         Verify Password:
         <input type = "password" name = "vpwd"/>
-        <div>%(error_pwd_mismatch)s</div>
+        <div>"%(error_pwd_mismatch)s"</div>
     </label>
     </p>
     <p>
     <label>
         Email:
         <input type = "text" name = "email"/>
-        <div>%(error_email)s</div>
+        <div>%(error_email)s"</div>
     </label>
     </p>
     <input type = "submit"/>
@@ -55,8 +55,14 @@ def valid_email(email):
 
 class Index(webapp2.RequestHandler):
 
+    def write_form(self,info_form, uname = "", pwd = "", vpwd = "", email = ""):
+        self.response.write(info_form % errors = {"error_uname": "Invalid username",
+                  "error_pwd": "Invalid password",
+                  "error_pwd_mismatch": "Passwords do no match",
+                  "error_email": "Invalid email"})
+
     def get(self):
-        self.response.write(info_form)
+        self.write_form()
 
     def post(self,error = ""):
         uname = str(self.request.get("uname"))
@@ -64,26 +70,21 @@ class Index(webapp2.RequestHandler):
         vpwd = str(self.request.get("vpwd"))
         email = str(self.request.get("email"))
 
-        errors = {"error_uname": "Invalid username",
-                  "error_pwd": "Invalid password",
-                  "error_pwd_mismatch": "Passwords do no match",
-                  "error_email": "Invalid email"}
-
         check_uname = valid_uname(uname)
         if not valid_uname(uname):
-            info_form % errors["error_uname"]
+            info_form % errors
 
         check_pwd = valid_pwd(pwd)
         if not valid_pwd(pwd):
-            info_form % errors["error_pwd"]
+            info_form % errors
         if pwd != vpwd:
-            info_form % errors["error_pwd_mismatch"]
+            info_form % errors
 
         check_email = valid_email(email)
         if not valid_email(email):
-            info_form % errors["error_email"]
+            info_form % errors
 
-        self.response.write(info_form)
+        self.write_form(uname, pwd, vpwd, email)
 
         if valid_uname(uname) and valid_pwd(pwd) and valid_email(email):
             welcome = """
