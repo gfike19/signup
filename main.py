@@ -55,16 +55,17 @@ def valid_email(email):
 
 class Index(webapp2.RequestHandler):
 
-    def write_form(self,info_form, uname = "", pwd = "", vpwd = "", email = ""):
-        self.response.write(info_form % errors = {"error_uname": "Invalid username",
-                  "error_pwd": "Invalid password",
-                  "error_pwd_mismatch": "Passwords do no match",
-                  "error_email": "Invalid email"})
+    def write_form(self,info_form):
+        self.response.write(info_form)
 
     def get(self):
-        self.write_form()
+        self.write_form(info_form)
 
-    def post(self,error = ""):
+    def post(self):
+        errors = {"error_uname": "Invalid username",
+                  "error_pwd": "Invalid password",
+                  "error_pwd_mismatch": "Passwords do no match",
+                  "error_email": "Invalid email"}
         uname = str(self.request.get("uname"))
         pwd = str(self.request.get("pwd"))
         vpwd = str(self.request.get("vpwd"))
@@ -84,23 +85,23 @@ class Index(webapp2.RequestHandler):
         if not valid_email(email):
             info_form % errors
 
-        self.write_form(uname, pwd, vpwd, email)
+        else:
+            self.write_form(uname, pwd, vpwd, email)
 
         if valid_uname(uname) and valid_pwd(pwd) and valid_email(email):
             welcome = """
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Welcome %s/title>
+                <title>Welcome %(uname)s/title>
             </head>
             <body>
-            <h1>Welcome %s</h1>
+            <h1>Welcome %(uname)s</h1>
             </body>
             </html>
             """
-            welcome % uname
 
-            self.response.write(welcome)
+            self.response.write(welcome % uname)
 
 
 app = webapp2.WSGIApplication([
