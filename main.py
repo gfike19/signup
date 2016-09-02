@@ -1,5 +1,4 @@
 import webapp2
-import cgi
 import re
 
 info_form = """
@@ -11,25 +10,29 @@ info_form = """
 <body>
 <form action = "input" method = "post">
     <label>
-        Username:
-        <input type = "text" name = "uname" value = "%(error_uname)s"/>
+        <strong>Username:</strong>
+        <input type = "text" name = "uname" value = "%(uname)s" required/>
+        <div style = "color: red; display: inline;">%(error_uname)s</div>
     </label>
     <p>
     <label>
-        Password:
-        <input type = "password" name = "pwd" value = "%(error_pwd)s"/>
-    </label>
-    </p>
-    <p>
-    <label>
-        Verify Password:
-        <input type = "password" name = "vpwd" value = "%(error_pwd_mismatch)s"/>
+        <strong>Password: </strong>
+        <input type = "password" name = "pwd" required/>
+        <div style = "color: red; display: inline;">%(error_pwd)s</div>
     </label>
     </p>
     <p>
     <label>
-        Email:
-        <input type = "text" name = "email" value = "%(error_email)s"/>
+        <strong>Verify Password: </strong>
+        <input type = "password" name = "vpwd" required/>
+        <div style = "color: red; display: inline;">%(error_vpwd)s</div>
+    </label>
+    </p>
+    <p>
+    <label>
+        <strong>Email:</strong> (Optional)
+        <input type = "text" name = "email"/>
+        <div style = "color: red; display: inline;">%(error_email)s</div>
     </label>
     </p>
     <input type = "submit"/>
@@ -37,68 +40,82 @@ info_form = """
 </body>
 </html>
 """
+
+welcome = """
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome %(uname)s!</title>
+</head>
+<body>
+<h3>Welcome %(uname)s!</h3>
+</body>
+</html>
+"""
 uname_re = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 def valid_uname(uname):
-    return uname and uname_re.match(uname)
+    return uname_re.match(uname)
 
 pwd_re = re.compile(r"^.{3,20}$")
 def valid_pwd(pwd):
-    return pwd and pwd_re.match(pwd)
+    return pwd_re.match(pwd)
 
 email_re = re.compile(r"^[\S]+@[\S]+.[\S]+$")
 def valid_email(email):
-    return email and email_re.match(email)
+    return email_re.match(email)
 
 class Index(webapp2.RequestHandler):
 
-    def write_form(self,info_form, uname = "", pwd = "", vpwd = "", email = ""):
-        self.response.write(info_form % {"error_uname": "Invalid username",
-                  "error_pwd": "Invalid password",
-                  "error_pwd_mismatch": "Passwords do no match",
-                  "error_email": "Invalid email"})
+    def write_form(self, error_uname = "", error_pwd = "", error_vpwd = "", error_email = ""):
+        self.response.write(info_form % {"error_uname" : error_uname,
+        "error_pwd":error_pwd,
+        "error_vpwd":error_vpwd,
+        "error_email":error_email})
 
     def get(self):
-        self.write_form(info_form)
+        self.write_form()
+
+class ValidateForm(webapp2.RequestHandler):
+
+    def write_form(self, error_uname = "", error_pwd = "", error_vpwd = "", error_email = ""):
+        self.response.write(info_form % {"error_uname" : error_uname,
+        "error_pwd":error_pwd,
+        "error_vpwd":error_vpwd,
+        "error_email":error_email})
 
     def post(self):
-        uname = str(self.request.get("uname"))
-        pwd = str(self.request.get("pwd"))
-        vpwd = str(self.request.get("vpwd"))
-        email = str(self.request.get("email"))
+        uname = self.request.get("uname")
+        pwd = self.request.get("pwd")
+        vpwd = self.request.get("vpwd")
+        email = self.request.get("email")
 
-        check_uname = valid_uname(uname)
+        error_uname = ""
+        error_pwd = ""
+        error_vpwd = ""
+        error_email = ""
+
         if not valid_uname(uname):
-            info_form % ["error_uname"] = "Invalid username"
+            error_uname = "Invalid username"
 
-        check_pwd = valid_pwd(pwd)
-        if not valid_pwd(pwd):
-            info_form % ["error_pwd"] = "Invalid password"
-        if pwd != vpwd:
-            info_form % ["error_pwd_mismatch"] = "Passwords do not match"
+        elif not valid_pwd(pwd):
+            error_pwd = "Invalid password"
 
-        check_email = valid_email(email)
-        if not valid_email(email):
-            info_form % ["error_email"] = "Invalid email"
+        elif vpwd != pwd:
+            error_vpwd = "Passwords do not match"
 
-        else:
-            self.write_form(uname, pwd, vpwd, email)
+        elif email:
+            error_email = ""
+            if not valid_email(email):
+                error_email = "Invalid email"
 
-        if valid_uname(uname) and valid_pwd(pwd) and valid_email(email):
-            welcome = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Welcome %(uname)s/title>
-            </head>
-            <body>
-            <h1>Welcome %(uname)s</h1>
-            </body>
-            </html>
-            """
+        self.write_form(error_uname, error_pwd, error_vpwd, error_email)
 
-            self.response.write(welcome % uname)
+        if valid_uname(uname) and valid_pwd(pwd) and vpwd == pwd:
+            uname = str(self.request.get("uname"))
+            self.response.out.write(welcome % {"uname":uname})
 
 
 app = webapp2.WSGIApplication([
-    ('/', Index)
+    ('/', Index),
+    ('/input', ValidateForm)
 ], debug=True)
