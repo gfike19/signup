@@ -66,22 +66,30 @@ def valid_email(email):
 
 class Index(webapp2.RequestHandler):
 
-    def write_form(self, error_uname = "", error_pwd = "", error_vpwd = "", error_email = ""):
+    def write_form(self, error_uname = "", error_pwd = "", error_vpwd = "", error_email = "", uname = "", pwd = "", vpwd = "", email = ""):
         self.response.write(info_form % {"error_uname" : error_uname,
-        "error_pwd":error_pwd,
-        "error_vpwd":error_vpwd,
-        "error_email":error_email})
+        "error_pwd" : error_pwd,
+        "error_vpwd" : error_vpwd,
+        "error_email" : error_email,
+        "uname":uname,
+        "pwd":pwd,
+        "vpwd":vpwd,
+        "email":email})
 
     def get(self):
         self.write_form()
 
 class ValidateForm(webapp2.RequestHandler):
 
-    def write_form(self, error_uname = "", error_pwd = "", error_vpwd = "", error_email = ""):
-        self.response.write(info_form % {"error_uname" : error_uname,
+    def write_form(self, error_uname = "", error_pwd = "", error_vpwd = "", error_email = "",  uname = "", pwd = "", vpwd = "", email = ""):
+        self.response.write(info_form %{"error_uname" : error_uname,
         "error_pwd":error_pwd,
         "error_vpwd":error_vpwd,
-        "error_email":error_email})
+        "error_email":error_email,
+        "uname":uname,
+        "pwd":pwd,
+        "vpwd":vpwd,
+        "email":email})
 
     def post(self):
         uname = self.request.get("uname")
@@ -93,25 +101,32 @@ class ValidateForm(webapp2.RequestHandler):
         error_pwd = ""
         error_vpwd = ""
         error_email = ""
+        error_count = 0
 
         if not valid_uname(uname):
             error_uname = "Invalid username"
+            error_count += 1
+
 
         elif not valid_pwd(pwd):
             error_pwd = "Invalid password"
+            error_count += 1
 
         elif vpwd != pwd:
             error_vpwd = "Passwords do not match"
+            error_count += 1
 
         elif email:
             error_email = ""
             if not valid_email(email):
                 error_email = "Invalid email"
+                error_count += 1
 
-        self.write_form(error_uname, error_pwd, error_vpwd, error_email)
+        if error_count > 0:
+            self.write_form(error_uname, error_pwd, error_vpwd, error_email)
 
         if valid_uname(uname) and valid_pwd(pwd) and vpwd == pwd:
-            uname = str(self.request.get("uname"))
+            str_uname = str(uname)
             self.response.out.write(welcome % {"uname":uname})
 
 
